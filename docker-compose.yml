@@ -1,0 +1,52 @@
+version: '3.9'
+
+networks:
+  testlink_net:
+     name: testlink-networks
+
+services:
+
+# TestLink Apps
+  testlink:
+    image: 'bitnami/${APP_VERSION}'
+    container_name: ${APP_CONTAINER_NAME}
+    environment:
+      - MARIADB_HOST=mariadb
+      - MARIADB_PORT_NUMBER=3306
+      - TESTLINK_DATABASE_NAME=${DB_NAME}
+      - TESTLINK_DATABASE_USER=${DB_USER}
+      - TESTLINK_DATABASE_PASSWORD=${DB_PASSWORD}
+      - TESTLINK_USERNAME=${TESTLINK_USER}
+      - TESTLINK_PASSWORD=${TESTLINK_PASSWORD}
+      - TESTLINK_LANGUAGE=ja_JP
+      - SMTP_ENABLE=true
+      - TESTLINK_EMAIL=${EMAIL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_CONNECTION_MODE=tls
+    ports:
+      - ${HOST_TESTLINK}:${FORWARD_PORT}:${APP_PORT}
+    volumes:
+      - './testlink_data:/bitnami'
+    networks:
+      - testlink_net
+    restart: always
+    depends_on:
+      - mariadb
+
+# MariaDB
+  mariadb:
+    image: 'bitnami/${DB_VERSION}'
+    container_name: ${DB_CONTAINER_NAME}
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - './mariadb_data:/bitnami'
+    networks:
+      - testlink_net
+    restart: always
